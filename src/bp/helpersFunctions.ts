@@ -28,15 +28,31 @@ export const fillCellMatrixHorizontally = (rows: BPRow[]): BPRow[] => rows.map(r
         .filter(mappedCell => mappedCell.className?.includes('quarter'))
         .forEach(mappedCell => {
             const cells = row.cells as NumberCell[];
-            cells[mappedCell.idx].value = cells[mappedCell.idx + 1].value + cells[mappedCell.idx + 2].value + cells[mappedCell.idx + 3].value;
+            const quarterCell = cells[mappedCell.idx];
+            const month1 = cells[mappedCell.idx + 1];
+            const month2 = cells[mappedCell.idx + 2];
+            const month3 = cells[mappedCell.idx + 3];
+
+            if (quarterCell && month1 && month2 && month3 &&
+                'value' in quarterCell && 'value' in month1 && 'value' in month2 && 'value' in month3) {
+                quarterCell.value = (month1.value || 0) + (month2.value || 0) + (month3.value || 0);
+            }
         });
 
     mappedCells
         .filter(mappedCell => mappedCell.className?.includes('year'))
         .forEach(mappedCell => {
             const cells = row.cells as NumberCell[];
-            cells[mappedCell.idx].value = cells[mappedCell.idx + 1].value + cells[mappedCell.idx + 5].value
-                + cells[mappedCell.idx + 9].value + cells[mappedCell.idx + 13].value
+            const yearCell = cells[mappedCell.idx];
+            const quarter1 = cells[mappedCell.idx + 1];
+            const quarter2 = cells[mappedCell.idx + 5];
+            const quarter3 = cells[mappedCell.idx + 9];
+            const quarter4 = cells[mappedCell.idx + 13];
+
+            if (yearCell && quarter1 && quarter2 && quarter3 && quarter4 &&
+                'value' in yearCell && 'value' in quarter1 && 'value' in quarter2 && 'value' in quarter3 && 'value' in quarter4) {
+                yearCell.value = (quarter1.value || 0) + (quarter2.value || 0) + (quarter3.value || 0) + (quarter4.value || 0);
+            }
         });
     return row;
 });

@@ -2,48 +2,51 @@ import { Row, NumberCell } from "@silevis/reactgrid";
 import { RowCells } from '../BP';
 import { HorizontalChevronCell } from '../cellTemplates/horizontalChevronCellTemplate/HorizontalChevronCellTemplate';
 import { NonEditableNumberCell } from './CellTemplates';
-import { startYear, endYear } from './columns';
-const generateMonthHeader = (year: number, quarter: string, month: number): HorizontalChevronCell => {
+import { startDate, endDate } from './columns';
+
+const generateMonthHeader = (date: Date): HorizontalChevronCell => {
+    const year = date.getFullYear();
+    const quarter = Math.floor(date.getMonth() / 3) + 1;
+    const month = date.getMonth() + 1;
     const formattedMonth = `${month}`.padStart(2, '0');
-    return { type: 'horizontalChevron', text: `${formattedMonth}`, className: 'month header', parentId: `${year}-${quarter}` };
+    return { type: 'horizontalChevron', text: `${formattedMonth}`, className: 'month header', parentId: `${year}-Q${quarter}` };
 }
 
-const generateQuarterHeader = (year: number, quarter: string, hasChildren: boolean = true, isExpanded: boolean = true): HorizontalChevronCell => {
-    return { type: 'horizontalChevron', text: quarter, className: 'quarter header', parentId: `${year}`, hasChildren, isExpanded: true };
+const generateQuarterHeader = (date: Date, hasChildren: boolean = true, isExpanded: boolean = true): HorizontalChevronCell => {
+    const year = date.getFullYear();
+    const quarter = Math.floor(date.getMonth() / 3) + 1;
+    return { type: 'horizontalChevron', text: `Q${quarter}`, className: 'quarter header', parentId: `${year}`, hasChildren, isExpanded };
 }
 
-const generateQuarter = (year: number, quarter: string, month: number, isExpanded: boolean = true) => {
-    return [
-        generateQuarterHeader(year, quarter, isExpanded),
-        generateMonthHeader(year, quarter, month),
-        generateMonthHeader(year, quarter, month + 1),
-        generateMonthHeader(year, quarter, month + 2),
-    ]
+const generateYearHeader = (date: Date, hasChildren: boolean = true, isExpanded: boolean = true): HorizontalChevronCell => {
+    const year = date.getFullYear();
+    return { type: 'horizontalChevron', text: `${year}`, className: 'year header', parentId: undefined, hasChildren, isExpanded };
 }
 
-const generateYear = (year: number, hasChildren: boolean = true, isExpanded: boolean = true): RowCells[] => {
-    return [
-        { type: 'horizontalChevron', text: `${year}`, className: 'year header', parentId: undefined, hasChildren, isExpanded },
-        ...generateQuarter(year, 'Q1', 1),
-        ...generateQuarter(year, 'Q2', 4),
-        ...generateQuarter(year, 'Q3', 7),
-        ...generateQuarter(year, 'Q4', 10),
-    ];
-}
+const generateDateRange = (start: Date, end: Date) => {
+    const cells = [];
+    let currentDate = new Date(start);
+    currentDate.setDate(1); // Start from the first day of the month
 
-const generateYearsBetween = (start: number, end: number) => {
-    const years = [];
-    for (let year = start; year <= end; year++) {
-        years.push(...generateYear(year));
+    while (currentDate <= end) {
+        if (currentDate.getMonth() === 0 || currentDate.getTime() === start.getTime()) {
+            cells.push(generateYearHeader(currentDate));
+        }
+        if (currentDate.getMonth() % 3 === 0 || currentDate.getTime() === start.getTime()) {
+            cells.push(generateQuarterHeader(currentDate));
+        }
+        cells.push(generateMonthHeader(currentDate));
+
+        currentDate.setMonth(currentDate.getMonth() + 1);
     }
-    return years;
+    return cells;
 }
 
 export const topHeaderRow: Row<RowCells> = {
     rowId: 'topHeader',
     cells: [
         { type: 'text', text: 'Organization / Period' },
-        ...generateYearsBetween(startYear, endYear),
+        ...generateDateRange(startDate, endDate),
     ]
 };
 
@@ -58,31 +61,17 @@ const generateNonEditableNumberCell = (value: number, className: string = '', na
 }
 
 export const generateEmptyYear = (): RowCells[] => {
-    const cells: RowCells[] = [];
-    for (let year = startYear; year <= endYear; year++) {
-        cells.push(generateNonEditableNumberCell(0, 'year'));
-        for (let quarter = 1; quarter <= 4; quarter++) {
-            cells.push(generateNonEditableNumberCell(0, 'quarter'));
-            for (let month = 1; month <= 3; month++) {
-                cells.push(generateNonEditableNumberCell(0, 'month'));
-            }
-        }
-    }
-    return cells;
+    return generateDateRange(startDate, endDate).map(() => generateNonEditableNumberCell(0, 'empty'));
 };
 
 export const generateFilledYear = (min: number = 0, max: number = 10000, bonus: number = 0): RowCells[] => {
-    const cells: RowCells[] = [];
-    for (let year = startYear; year <= endYear; year++) {
-        cells.push(generateNonEditableNumberCell(0, 'year'));
-        for (let quarter = 1; quarter <= 4; quarter++) {
-            cells.push(generateNumberCell(0, 'quarter editable'));
-            for (let month = 1; month <= 3; month++) {
-                cells.push(generateNumberCell(getRandomInt(min, max) + bonus * (quarter - 1), 'month editable'));
-            }
+    return generateDateRange(startDate, endDate).map((cell, index) => {
+        if (cell.type === 'horizontalChevron') {
+            return generateNonEditableNumberCell(0, cell.className || '');
+        } else {
+            return generateNumberCell(getRandomInt(min, max) + bonus * Math.floor(index / 3), 'editable');
         }
-    }
-    return cells;
+    });
 };
 
 const getRandomInt = (min: number, max: number): number => {
