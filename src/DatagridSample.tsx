@@ -5,7 +5,7 @@ import { DropdownNumberCellTemplate, DropdownNumberCell } from './cellTemplates/
 import { FlagCellTemplate, FlagCell } from './cellTemplates/flagCell/FlagCellTemplate';
 import { columns as crmColumns } from './crm/columns';
 import { rows as crmRows } from './crm/rows';
-import './styling.scss';
+import './crm/styling.scss';
 import { VirtualEnv, IDatagridState } from './VirtualEnv';
 import { VirtualUser } from './VirtualUser';
 import useInterval from '@use-it/interval';
