@@ -30,8 +30,19 @@ const generateYear = (year: number) => {
     ]
 }
 
+export const startYear = 2020;
+export const endYear = 2024;
+
+const generateYearsBetween = (start: number, end: number) => {
+    const years = [];
+    for (let year = start; year <= end; year++) {
+        years.push(...generateYear(year));
+
+    }
+    return years;
+}
+
 export const dataColumns: BPColumn[] = [
     { columnId: 'Struct', width: 250 },
-    ...generateYear(2020),
-    ...generateYear(2021),
+    ...generateYearsBetween(startYear, endYear),
 ]

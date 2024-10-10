@@ -2,7 +2,7 @@ import { Row, NumberCell } from "@silevis/reactgrid";
 import { RowCells } from '../BP';
 import { HorizontalChevronCell } from '../cellTemplates/horizontalChevronCellTemplate/HorizontalChevronCellTemplate';
 import { NonEditableNumberCell } from './CellTemplates';
-
+import { startYear, endYear } from './columns';
 const generateMonthHeader = (year: number, quarter: string, month: number): HorizontalChevronCell => {
     const formattedMonth = `${month}`.padStart(2, '0');
     return { type: 'horizontalChevron', text: `${formattedMonth}`, className: 'month header', parentId: `${year}-${quarter}` };
@@ -31,12 +31,19 @@ const generateYear = (year: number, hasChildren: boolean = true, isExpanded: boo
     ];
 }
 
+const generateYearsBetween = (start: number, end: number) => {
+    const years = [];
+    for (let year = start; year <= end; year++) {
+        years.push(...generateYear(year));
+    }
+    return years;
+}
+
 export const topHeaderRow: Row<RowCells> = {
     rowId: 'topHeader',
     cells: [
         { type: 'text', text: 'Organization / Period' },
-        ...generateYear(2020),
-        ...generateYear(2021),
+        ...generateYearsBetween(startYear, endYear),
     ]
 };
 
@@ -50,25 +57,33 @@ const generateNonEditableNumberCell = (value: number, className: string = '', na
     return { type: 'nonEditableNumber', value, className, nanToZero, format: myNumberFormat };
 }
 
-export const emptyYear = (): RowCells[] => [
-    generateNonEditableNumberCell(0, 'year'),
-    generateNonEditableNumberCell(0, 'quarter'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'quarter'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'quarter'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'quarter'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-    generateNonEditableNumberCell(0, 'month'),
-];
+export const generateEmptyYear = (): RowCells[] => {
+    const cells: RowCells[] = [];
+    for (let year = startYear; year <= endYear; year++) {
+        cells.push(generateNonEditableNumberCell(0, 'year'));
+        for (let quarter = 1; quarter <= 4; quarter++) {
+            cells.push(generateNonEditableNumberCell(0, 'quarter'));
+            for (let month = 1; month <= 3; month++) {
+                cells.push(generateNonEditableNumberCell(0, 'month'));
+            }
+        }
+    }
+    return cells;
+};
+
+export const generateFilledYear = (min: number = 0, max: number = 10000, bonus: number = 0): RowCells[] => {
+    const cells: RowCells[] = [];
+    for (let year = startYear; year <= endYear; year++) {
+        cells.push(generateNonEditableNumberCell(0, 'year'));
+        for (let quarter = 1; quarter <= 4; quarter++) {
+            cells.push(generateNumberCell(0, 'quarter editable'));
+            for (let month = 1; month <= 3; month++) {
+                cells.push(generateNumberCell(getRandomInt(min, max) + bonus * (quarter - 1), 'month editable'));
+            }
+        }
+    }
+    return cells;
+};
 
 const getRandomInt = (min: number, max: number): number => {
     min = Math.ceil(min);
@@ -76,36 +91,13 @@ const getRandomInt = (min: number, max: number): number => {
     return Math.floor(Math.random() * (max - min)) + min;
 }
 
-export const filledYear = (min: number = 0, max: number = 10000, bonus: number = 0): RowCells[] => {
-    return [
-        generateNonEditableNumberCell(0, 'year'),
-        generateNumberCell(0, 'quarter editable'),
-        generateNumberCell(getRandomInt(min, max), 'month editable'),
-        generateNumberCell(getRandomInt(min, max), 'month editable'),
-        generateNumberCell(getRandomInt(min, max), 'month editable'),
-        generateNumberCell(0, 'quarter editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 1, 'month editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 1, 'month editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 1, 'month editable'),
-        generateNumberCell(0, 'quarter editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 2, 'month editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 2, 'month editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 2, 'month editable'),
-        generateNumberCell(0, 'quarter editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 3, 'month editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 3, 'month editable'),
-        generateNumberCell(getRandomInt(min, max) + bonus * 3, 'month editable'),
-    ]
-};
-
 export const dataRows: Row<RowCells>[] = [
     {
         rowId: 'Silevis',
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Silevis organization', parentId: undefined, isExpanded: true },
-            ...emptyYear(),
-            ...emptyYear(),
+            ...generateEmptyYear(),
         ]
     },
     {
@@ -113,8 +105,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Expenses', parentId: 'Silevis', isExpanded: true },
-            ...emptyYear(),
-            ...emptyYear(),
+            ...generateEmptyYear(),
         ]
     },
     {
@@ -122,8 +113,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Fixed', parentId: 'Expenses', isExpanded: true },
-            ...emptyYear(),
-            ...emptyYear(),
+            ...generateEmptyYear(),
         ]
     },
     {
@@ -131,8 +121,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Salaries', parentId: 'Fixed', isExpanded: true },
-            ...emptyYear(),
-            ...emptyYear(),
+            ...generateEmptyYear(),
         ]
     },
     {
@@ -140,8 +129,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Serge Gainsbourg', parentId: 'Salaries', isExpanded: true },
-            ...filledYear(5500, 5500, 300.32),
-            ...filledYear(6400, 6400, 300),
+            ...generateFilledYear(5500, 2352, 300.32),
         ]
     },
     {
@@ -149,8 +137,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Jacob Sandberg', parentId: 'Salaries' },
-            ...filledYear(4500, 4500, 100),
-            ...filledYear(6000, 6000, 50.12),
+            ...generateFilledYear(4500, 3253, 100),
         ]
     },
     {
@@ -158,8 +145,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Elizabeth Hudson', parentId: 'Salaries' },
-            ...filledYear(5500, 5500, 300),
-            ...filledYear(6400, 6400, 300),
+            ...generateFilledYear(6000, 2352, 50.12),
         ]
     },
     {
@@ -167,8 +153,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Office costs', parentId: 'Fixed', isExpanded: true },
-            ...emptyYear(),
-            ...emptyYear(),
+            ...generateFilledYear(1000, 532, 10.12),
         ]
     },
     {
@@ -176,8 +161,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Gas', parentId: 'Office costs' },
-            ...filledYear(1000, 1200, 10.1),
-            ...filledYear(1050, 1100, 12.02),
+            ...generateFilledYear(599, 232, 10.12),
         ]
     },
     {
@@ -185,8 +169,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Electricity', parentId: 'Office costs' },
-            ...filledYear(90, 110, 1.2),
-            ...filledYear(80, 120, 1.02),
+            ...generateFilledYear(589, 435, 10.12),
         ]
     },
     {
@@ -194,8 +177,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Rent', parentId: 'Office costs' },
-            ...filledYear(2200, 2200),
-            ...filledYear(2300, 2300),
+            ...generateFilledYear(343, 235, 10.12),
         ]
     },
     {
@@ -203,8 +185,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Insurance', parentId: 'Fixed', isExpanded: true },
-            ...filledYear(1520, 1520),
-            ...filledYear(1530, 1540),
+            ...generateFilledYear(235, 835, 10.12),
         ]
     },
     {
@@ -212,8 +193,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'One-time', parentId: 'Expenses', isExpanded: true },
-            ...emptyYear(),
-            ...emptyYear(),
+            ...generateFilledYear(435, 235, 10.12),
         ]
     },
     {
@@ -221,40 +201,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Vehicle', parentId: 'One-time' },
-            generateNonEditableNumberCell(0, 'year'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(35000, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(25000, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNonEditableNumberCell(0, 'year'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(25000, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
+            ...generateFilledYear(958, 231, 10.12),
         ]
     },
     {
@@ -262,40 +209,7 @@ export const dataRows: Row<RowCells>[] = [
         reorderable: true,
         cells: [
             { type: 'chevron', text: 'Computer', parentId: 'One-time' },
-            generateNonEditableNumberCell(0, 'year'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(3000, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(3200, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNonEditableNumberCell(0, 'year'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(3000, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'quarter editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
-            generateNumberCell(0, 'month editable'),
+            ...generateFilledYear(435, 769, 10.12),
         ]
     },
 ];

@@ -11,7 +11,7 @@ import {
     getColumnsIdsxToRender, filterCellsOnRows, resetAggregatedMonthFields,
 } from "./bp/helpersFunctions";
 
-import { dataRows, topHeaderRow, filledYear, emptyYear } from "./bp/rows";
+import { dataRows, topHeaderRow, generateFilledYear, generateEmptyYear } from "./bp/rows";
 import { dataColumns, BPColumn } from "./bp/columns";
 import { HorizontalChevronCell, HorizontalChevronCellTemplate } from './cellTemplates/horizontalChevronCellTemplate/HorizontalChevronCellTemplate';
 import { reorderArray } from './bp/reorderArray';
@@ -181,8 +181,7 @@ export const BPSample: React.FC = () => {
                                 reorderable: true,
                                 cells: [
                                     { type: 'chevron', text: `New row`, parentId: selectedRowIds[0], isExpanded: false },
-                                    ...filledYear(0, 0),
-                                    ...filledYear(0, 0)
+                                    ...generateFilledYear()
                                 ]
                             };
 
@@ -190,8 +189,7 @@ export const BPSample: React.FC = () => {
                                 ...selectedRow,
                                 cells: [
                                     selectedRow.cells[0],
-                                    ...emptyYear(),
-                                    ...emptyYear()
+                                    ...generateEmptyYear()
                                 ]
                             }
 
